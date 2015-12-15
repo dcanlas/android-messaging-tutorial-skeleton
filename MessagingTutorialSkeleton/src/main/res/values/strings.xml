@@ -6,5 +6,6 @@
     <string name="username">USERNAME</string>
     <string name="password">PASSWORD</string>
     <string name="message_elipses">Message...</string>
+    <string name="title_activity_list_users">ListUsersActivity</string>
 
 </resources>
