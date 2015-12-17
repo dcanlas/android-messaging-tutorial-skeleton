@@ -33,6 +33,17 @@
             android:name="com.sinch.messagingtutorialskeleton.ListUsersActivity"
             android:label="@string/title_activity_list_users" >
         </activity>
+
+        <service
+            android:name="com.sinch.messagingtutorialskeleton.MessageService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
+
+        <activity
+            android:name="com.sinch.messagingtutorialskeleton.MessagingActivity"
+            android:label="@string/title_activity_messaging" >
+        </activity>
     </application>
 
 </manifest>

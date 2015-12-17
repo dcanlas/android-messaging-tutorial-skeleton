@@ -1,6 +1,7 @@
 package com.sinch.messagingtutorialskeleton;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -20,17 +21,24 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     private EditText usernameField;
     private EditText passwordField;
 
+    private Intent intent;
+    private Intent serviceIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+
+        intent = new Intent(getApplicationContext(), ListUsersActivity.class);
+        serviceIntent = new Intent(getApplicationContext(), MessageService.class);
 
         //See if there is a user already logged in.
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser != null) {
-            //start next activity
-            //start sinch service
+            startActivity(intent);
+            startService(serviceIntent);
         }
+
+        setContentView(R.layout.activity_login);
 
         loginButton = (Button) findViewById(R.id.loginButton);
         signUpButton = (Button) findViewById(R.id.signupButton);
@@ -39,6 +47,12 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
         loginButton.setOnClickListener(this);
         signUpButton.setOnClickListener(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        stopService(new Intent(this, MessageService.class));
+        super.onDestroy();
     }
 
     @Override
@@ -58,8 +72,8 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         ParseUser.logInInBackground(username, password, new LogInCallback() {
             public void done(ParseUser user, com.parse.ParseException e) {
                 if (user != null) {
-                    //start next activity
-                    //start sinch service
+                    startActivity(intent);
+                    startService(serviceIntent);
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "There was an error logging in.",
@@ -81,8 +95,8 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         user.signUpInBackground(new SignUpCallback() {
             public void done(com.parse.ParseException e) {
                 if (e == null) {
-                    //start next activity
-                    //start sinch service
+                    startActivity(intent);
+                    startService(serviceIntent);
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "There was an error signing up."
