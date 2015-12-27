@@ -12,7 +12,8 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:id="@+id/linearLayout">
 
         <TextView
             android:layout_width="wrap_content"
@@ -82,4 +83,15 @@
                 android:background="@drawable/button_signup"/>
         </LinearLayout>
     </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="WFL"
+        android:id="@+id/appTitle"
+        android:textColor="#471be5"
+        android:textSize="40sp"
+        android:layout_above="@+id/linearLayout"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
