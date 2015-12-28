@@ -4,10 +4,14 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -32,13 +36,14 @@ public class MessagingActivity extends Activity {
 
     private String recipientId;
     private EditText messageBodyField;
-    private String messageBody;
     private MessageService.MessageServiceInterface messageService;
     private String currentUserId;
     private ServiceConnection serviceConnection = new MyServiceConnection();
     private MessageClientListener messageClientListener = new MyMessageClientListener();
     private ListView messagesList;
     private MessageAdapter messageAdapter;
+    private LinearLayout selectGroup;
+    private ImageView selectedFood;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +55,15 @@ public class MessagingActivity extends Activity {
         Intent intent = getIntent();
         recipientId = intent.getStringExtra("RECIPIENT_ID");
         currentUserId = ParseUser.getCurrentUser().getObjectId();
-        messageBodyField = (EditText) findViewById(R.id.messageBodyField);
+        selectGroup = (LinearLayout) findViewById(R.id.selectGroup);
+        generateFoodButtons();
         //listen for a click on the send button
+        /*
         findViewById(R.id.sendButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //send the message!
-                messageBody = messageBodyField.getText().toString();
+                selectedFood.get
                 if (messageBody.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Please enter a message", Toast.LENGTH_LONG).show();
                     return;
@@ -65,6 +72,8 @@ public class MessagingActivity extends Activity {
                 messageBodyField.setText("");
             }
         });
+        */
+
 
         messagesList = (ListView) findViewById(R.id.listMessages);
         messageAdapter = new MessageAdapter(this);
@@ -90,6 +99,34 @@ public class MessagingActivity extends Activity {
                 }
             }
         });
+    }
+
+    public void generateFoodButtons() {
+        LayoutInflater l = getLayoutInflater();
+        FoodModel[] foods = FoodGroup.ALL_FOODS;
+        for (int i = 0; i < foods.length; i++) {
+            FoodModel food = foods[i];
+            ImageView v = (ImageView) l.inflate(R.layout.food_button, selectGroup, false);
+            v.setId(food.getId());
+            v.setImageResource(food.getDrawableId());
+            v.setTag(food);
+            selectGroup.addView(v);
+        }
+    }
+
+    //Sets onclick action for the images in the selectGroup
+    public void selectButtonClick(View target) {
+        deselectOthers();
+        target.setBackgroundColor(Color.parseColor("#cccccc"));
+        selectedFood = (ImageView) target;
+    }
+
+    private void deselectOthers() {
+        for (int i = 0; i < selectGroup.getChildCount(); i++) {
+            ImageView foodImg = (ImageView) selectGroup.getChildAt(i);
+            //remove the background color.
+            foodImg.setBackgroundColor(0);
+        }
     }
 
     //unbind the service when the activity is destroyed
