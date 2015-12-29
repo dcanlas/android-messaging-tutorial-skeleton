@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -34,8 +33,9 @@ import java.util.List;
 
 public class MessagingActivity extends Activity {
 
+    static final String LOG_TAG = "messaging_activity";
+
     private String recipientId;
-    private EditText messageBodyField;
     private MessageService.MessageServiceInterface messageService;
     private String currentUserId;
     private ServiceConnection serviceConnection = new MyServiceConnection();
@@ -58,21 +58,21 @@ public class MessagingActivity extends Activity {
         selectGroup = (LinearLayout) findViewById(R.id.selectGroup);
         generateFoodButtons();
         //listen for a click on the send button
-        /*
+
         findViewById(R.id.sendButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //send the message!
-                selectedFood.get
-                if (messageBody.isEmpty()) {
+                if (selectedFood == null) {
                     Toast.makeText(getApplicationContext(), "Please enter a message", Toast.LENGTH_LONG).show();
                     return;
                 }
-                messageService.sendMessage(recipientId, messageBody);
-                messageBodyField.setText("");
+                FoodModel food = (FoodModel) selectedFood.getTag();
+                messageService.sendMessage(recipientId, food.toJSON());
+                deselectOthers();
             }
         });
-        */
+
 
 
         messagesList = (ListView) findViewById(R.id.listMessages);
@@ -107,8 +107,9 @@ public class MessagingActivity extends Activity {
         for (int i = 0; i < foods.length; i++) {
             FoodModel food = foods[i];
             ImageView v = (ImageView) l.inflate(R.layout.food_button, selectGroup, false);
+            int iconId = getResources().getIdentifier(food.getDrawableName(), "drawable", getPackageName());
             v.setId(food.getId());
-            v.setImageResource(food.getDrawableId());
+            v.setImageResource(iconId);
             v.setTag(food);
             selectGroup.addView(v);
         }
