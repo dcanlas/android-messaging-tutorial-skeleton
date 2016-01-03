@@ -4,12 +4,16 @@ package com.wfl.application;
 import android.app.Application;
 
 import com.parse.Parse;
+import com.parse.ParseFacebookUtils;
+import com.waffle.wfl.R;
 
 public class App extends Application {
 
-    @Override public void onCreate() {
+    @Override
+    public void onCreate() {
+        Parse.initialize(this, getString(R.string.parse_app_id), getString(R.string.parse_client_key));
+        ParseFacebookUtils.initialize(this);
         super.onCreate();
-
-        Parse.initialize(this, "VbMeH3TbACtNQKKl4y8EocBFT4LuSjHQrz5kWMWv", "lzRt3lHE6V2i3yHYmiUxSrRKfCvXJxQoNX6h8mVJ"); // Your Application ID and Client Key are defined elsewhere
     }
+
 }

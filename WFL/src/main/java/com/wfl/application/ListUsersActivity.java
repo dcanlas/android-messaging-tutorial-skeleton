@@ -14,11 +14,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.messagingtutorialskeleton.R;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.waffle.wfl.R;
 
 import java.util.ArrayList;
 import java.util.List;

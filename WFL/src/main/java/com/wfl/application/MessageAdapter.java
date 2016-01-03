@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.example.messagingtutorialskeleton.R;
 import com.sinch.android.rtc.messaging.WritableMessage;
+import com.waffle.wfl.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;

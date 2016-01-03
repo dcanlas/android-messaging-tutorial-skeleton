@@ -8,11 +8,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.messagingtutorialskeleton.R;
 import com.parse.LogInCallback;
+import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 import com.parse.SignUpCallback;
-
+import com.waffle.wfl.R;
 
 public class LoginActivity extends Activity implements View.OnClickListener {
 
@@ -47,6 +47,12 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
         loginButton.setOnClickListener(this);
         signUpButton.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

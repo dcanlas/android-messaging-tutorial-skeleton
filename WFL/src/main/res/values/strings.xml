@@ -8,5 +8,8 @@
     <string name="message_elipses">Message...</string>
     <string name="title_activity_list_users">ListUsersActivity</string>
     <string name="title_activity_messaging">MessagingActivity</string>
+    <string name="facebook_app_id">613714078766358</string>
+    <string name="parse_app_id">VbMeH3TbACtNQKKl4y8EocBFT4LuSjHQrz5kWMWv</string>
+    <string name="parse_client_key">lzRt3lHE6V2i3yHYmiUxSrRKfCvXJxQoNX6h8mVJ</string>
 
 </resources>
