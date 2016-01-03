@@ -1,4 +1,4 @@
-package com.wfl.messagingtutorialskeleton;
+package com.wfl.application;
 
 import android.app.Activity;
 import android.app.ProgressDialog;

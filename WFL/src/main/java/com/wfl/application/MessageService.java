@@ -1,4 +1,4 @@
-package com.wfl.messagingtutorialskeleton;
+package com.wfl.application;
 
 import android.app.Service;
 import android.content.Intent;
