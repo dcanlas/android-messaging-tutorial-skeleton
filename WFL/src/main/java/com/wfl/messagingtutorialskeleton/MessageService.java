@@ -1,4 +1,4 @@
-package com.sinch.messagingtutorialskeleton;
+package com.wfl.messagingtutorialskeleton;
 
 import android.app.Service;
 import android.content.Intent;

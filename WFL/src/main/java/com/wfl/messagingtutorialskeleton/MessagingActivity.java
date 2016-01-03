@@ -1,4 +1,4 @@
-package com.sinch.messagingtutorialskeleton;
+package com.wfl.messagingtutorialskeleton;
 
 import android.app.Activity;
 import android.content.ComponentName;
