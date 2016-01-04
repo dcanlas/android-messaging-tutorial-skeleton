@@ -22,16 +22,22 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
         <meta-data
             android:name="com.parse.APPLICATION_ID"
-            android:value="VbMeH3TbACtNQKKl4y8EocBFT4LuSjHQrz5kWMWv" />
+            android:value="@string/parse_app_id" />
         <meta-data
             android:name="com.parse.CLIENT_KEY"
-            android:value="lzRt3lHE6V2i3yHYmiUxSrRKfCvXJxQoNX6h8mVJ" />
+            android:value="@string/parse_client_key" />
 
         <activity
             android:name="com.wfl.application.ListUsersActivity"
