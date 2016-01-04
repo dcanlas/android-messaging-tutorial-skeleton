@@ -20,7 +20,6 @@ import com.facebook.Profile;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseFile;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
@@ -29,7 +28,6 @@ import com.waffle.wfl.R;
 import org.json.JSONException;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -152,8 +150,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     }
 
     private void handleFbLogin() {
-        List<String> mPermissions = Arrays.asList("public_profile", "user_about_me",
-                "user_friends", "email");
+        List<String> mPermissions = Arrays.asList("public_profile", "user_friends", "email");
         ParseFacebookUtils.logInWithReadPermissionsInBackground(LoginActivity.this, mPermissions, new LogInCallback() {
             @Override
             public void done(ParseUser user, ParseException err) {
@@ -171,10 +168,13 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     }
 
     private void getUserDetailsFromFB() {
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "email,name");
+
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
                 "/me",
-                null,
+                parameters,
                 HttpMethod.GET,
                 new GraphRequest.Callback() {
                     public void onCompleted(GraphResponse response) {
@@ -193,15 +193,15 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                     }
                 }
         ).executeAsync();
-        mProfilePhotoAsync = new ProfilePhotoAsync(mFbProfile);
-        mProfilePhotoAsync.execute();
+//        mProfilePhotoAsync = new ProfilePhotoAsync(mFbProfile);
+//        mProfilePhotoAsync.execute();
     }
 
     private void saveNewUser() {
         final ParseUser parseUser = ParseUser.getCurrentUser();
         parseUser.setUsername(fbName);
         parseUser.setEmail(fbEmail);
-
+        /*
 //        Saving profile photo as a ParseFile
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 //        Bitmap bitmap = ((BitmapDrawable) mProfileImage.getDrawable()).getBitmap(); //Todo: set mprofileImage somewhere
@@ -222,6 +222,13 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                         Toast.makeText(LoginActivity.this, "New user:" + fbName + " Signed up", Toast.LENGTH_SHORT).show();
                     }
                 });
+            }
+        });
+        */
+        parseUser.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                Toast.makeText(LoginActivity.this, "New user:" + fbName + " Signed up", Toast.LENGTH_SHORT).show();
             }
         });
     }
