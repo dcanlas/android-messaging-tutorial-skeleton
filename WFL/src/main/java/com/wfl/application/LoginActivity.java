@@ -115,8 +115,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         ParseUser.logInInBackground(username, password, new LogInCallback() {
             public void done(ParseUser user, com.parse.ParseException e) {
                 if (user != null) {
-                    startActivity(intent);
-                    startService(serviceIntent);
+                    loginDone();
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "There was an error logging in.",
@@ -138,8 +137,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         user.signUpInBackground(new SignUpCallback() {
             public void done(com.parse.ParseException e) {
                 if (e == null) {
-                    startActivity(intent);
-                    startService(serviceIntent);
+                    loginDone();
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "There was an error signing up."
@@ -229,6 +227,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
             @Override
             public void done(ParseException e) {
                 Toast.makeText(LoginActivity.this, "New user:" + fbName + " Signed up", Toast.LENGTH_SHORT).show();
+                loginDone();
             }
         });
     }
@@ -249,6 +248,12 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         fbEmail = parseUser.getEmail();
         fbName = parseUser.getUsername();
         Toast.makeText(LoginActivity.this, "Welcome back " + fbName, Toast.LENGTH_SHORT).show();
+        loginDone();
+    }
+
+    private void loginDone() {
+        startActivity(intent);
+        startService(serviceIntent);
     }
 
     class ProfilePhotoAsync extends AsyncTask<String, String, String> {

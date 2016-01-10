@@ -20,8 +20,20 @@
             android:padding="16dp"
             tools:context="com.example.messagingtutorial.app.ListUsersActivity"
             android:background="#ffffff"
-            android:id="@+id/usersListView">
+            android:id="@+id/usersListView"
+            android:layout_weight="1">
         </ListView>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Invite Friends"
+            android:id="@+id/inviteButton"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/sinch_purple"
+            android:padding="12dp"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
     </LinearLayout>
 
 </RelativeLayout>
