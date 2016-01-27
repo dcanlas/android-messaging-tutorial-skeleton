@@ -11,6 +11,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -23,21 +24,27 @@ import com.waffle.wfl.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListUsersActivity extends Activity {
+public class ListUsersActivity extends Activity implements View.OnClickListener{
 
     ArrayList<String> names = new ArrayList<String>();
     private ProgressDialog progressDialog;
     private BroadcastReceiver receiver;
+    private Button inviteButton;
+    private Intent inviteIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_users);
+        inviteButton = (Button) findViewById(R.id.inviteButton);
+        inviteIntent = new Intent(getApplicationContext(), InviteFriendsActivity.class);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Loading");
         progressDialog.setMessage("Please wait...");
         progressDialog.show();
+
+        inviteButton.setOnClickListener(this);
 
         //broadcast receiver to listen for the broadcast
         //from MessageService
@@ -104,4 +111,10 @@ public class ListUsersActivity extends Activity {
         });
     }
 
+    @Override
+    public void onClick(View view) {
+        if (view == inviteButton) {
+            startActivity(inviteIntent);
+        }
+    }
 }

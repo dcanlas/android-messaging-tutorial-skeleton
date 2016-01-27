@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Some Name"
-        android:id="@+id/userName"
+        android:id="@+id/inviteableUserName"
         android:textSize="25sp"
         android:layout_weight="1" />
 
