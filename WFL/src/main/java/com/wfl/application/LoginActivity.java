@@ -17,12 +17,14 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.Profile;
+import com.firebase.client.AuthData;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.parse.SignUpCallback;
 import com.waffle.wfl.R;
 
 import org.json.JSONException;
@@ -34,6 +36,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class LoginActivity extends Activity implements View.OnClickListener {
 
@@ -52,18 +55,21 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     private String fbName;
     private Profile mFbProfile;
 
+    private Firebase myFirebaseRef;
+
     ProfilePhotoAsync mProfilePhotoAsync;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        intent = new Intent(getApplicationContext(), ListUsersActivity.class);
+//        intent = new Intent(getApplicationContext(), ListUsersActivity.class);
+        intent = new Intent(getApplicationContext(), InviteFriendsActivity.class); //temp
         serviceIntent = new Intent(getApplicationContext(), MessageService.class);
+        myFirebaseRef = new Firebase("https://dazzling-heat-6981.firebaseio.com/");
 
         //See if there is a user already logged in.
-        ParseUser currentUser = ParseUser.getCurrentUser();
-        if (currentUser != null) {
+        if (myFirebaseRef.getAuth() != null) {
             startActivity(intent);
             startService(serviceIntent);
         }
@@ -112,37 +118,42 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         String username = usernameField.getText().toString();
         String password = passwordField.getText().toString();
 
-        ParseUser.logInInBackground(username, password, new LogInCallback() {
-            public void done(ParseUser user, com.parse.ParseException e) {
-                if (user != null) {
-                    loginDone();
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            "There was an error logging in.",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
+        loginUser(username, password);
     }
 
     private void handleSignUp() {
-        String username = usernameField.getText().toString();
-        String password = passwordField.getText().toString();
+        final String username = usernameField.getText().toString();
+        final String password = passwordField.getText().toString();
 
-        ParseUser user = new ParseUser();
-        user.setUsername(username);
-        user.setPassword(password);
-
-        user.signUpInBackground(new SignUpCallback() {
-            public void done(com.parse.ParseException e) {
-                if (e == null) {
-                    loginDone();
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            "There was an error signing up."
-                            , Toast.LENGTH_LONG).show();
+        if (username.length() > 0 && password.length() > 0) {
+            myFirebaseRef.createUser(username, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
+                @Override
+                public void onSuccess(Map<String, Object> result) {
+                    Log.d(LOG_TAG, "Successfully created user account with uid: " + result.get("uid"));
+                    loginUser(username, password);
                 }
+                @Override
+                public void onError(FirebaseError firebaseError) {
+                    Toast.makeText(getApplicationContext(),
+                            firebaseError.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    private void loginUser(String username, String password) {
+        myFirebaseRef.authWithPassword(username, password,  new Firebase.AuthResultHandler() {
+            @Override
+            public void onAuthenticated(AuthData authData) {
+                Log.d(LOG_TAG, "User ID: " + authData.getUid() + ", Provider: " + authData.getProvider());
+                loginDone();
+            }
+            @Override
+            public void onAuthenticationError(FirebaseError firebaseError) {
+                Toast.makeText(getApplicationContext(),
+                        firebaseError.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
