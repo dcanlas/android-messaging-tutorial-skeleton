@@ -3,7 +3,6 @@ package com.wfl.application;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -57,10 +56,8 @@ public class InviteFriendsActivity extends Activity implements View.OnClickListe
                         names.add(userList.get(i).getUsername().toString());
                     }
                     ListView inviteableListView = (ListView) findViewById(R.id.inviteableListView);
-                    //Todo: The below is not using the proper list item, use custom list adapter to do it.
-                    ArrayAdapter<String> namesArrayAdapter = new ArrayAdapter<String>(getApplicationContext(),
-                            R.layout.user_list_item, names);
-                    inviteableListView.setAdapter(namesArrayAdapter);
+                    FriendListAdapter namesAdapter = new FriendListAdapter(names, getApplicationContext());
+                    inviteableListView.setAdapter(namesAdapter);
                 }
                 else {
                     Toast.makeText(getApplicationContext(),
