@@ -15,7 +15,12 @@ public class App extends Application {
         Parse.initialize(this, getString(R.string.parse_app_id), getString(R.string.parse_client_key));
         ParseFacebookUtils.initialize(this);
         Firebase.setAndroidContext(this);
+        initSingletons();
         super.onCreate();
+    }
+
+    public void initSingletons() {
+        MainDAO.initInstance();
     }
 
 }

@@ -66,7 +66,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 //        intent = new Intent(getApplicationContext(), ListUsersActivity.class);
         intent = new Intent(getApplicationContext(), InviteFriendsActivity.class); //temp
         serviceIntent = new Intent(getApplicationContext(), MessageService.class);
-        myFirebaseRef = new Firebase("https://dazzling-heat-6981.firebaseio.com/");
+        myFirebaseRef = MainDAO.getInstance().getFirebase();
 
         //See if there is a user already logged in.
         if (myFirebaseRef.getAuth() != null) {
