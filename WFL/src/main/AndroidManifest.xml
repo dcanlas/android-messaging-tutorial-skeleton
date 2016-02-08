@@ -56,6 +56,10 @@
             android:name="com.wfl.application.InviteFriendsActivity"
             android:label="@string/title_activity_invite_friends" >
         </activity>
+        <activity
+            android:name="com.wfl.application.SignupActivity"
+            android:label="@string/title_activity_signup" >
+        </activity>
     </application>
 
 </manifest>

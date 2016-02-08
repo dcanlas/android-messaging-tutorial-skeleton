@@ -10,6 +10,10 @@
     <string name="sign_up">SIGN UP FOR AN ACCOUNT HERE</string>
     <string name="log_in">LOGIN</string>
 
+    <string name="name_label">NAME</string>
+    <string name="email_label">EMAIL</string>
+    <string name="password_label">PASSWORD</string>
+
     <string name="message_elipses">Message...</string>
     <string name="title_activity_list_users">ListUsersActivity</string>
     <string name="title_activity_messaging">MessagingActivity</string>
@@ -19,5 +23,6 @@
     <string name="parse_app_id">VbMeH3TbACtNQKKl4y8EocBFT4LuSjHQrz5kWMWv</string>
     <string name="parse_client_key">lzRt3lHE6V2i3yHYmiUxSrRKfCvXJxQoNX6h8mVJ</string>
     <string name="title_activity_invite_friends">InviteFriendsActivity</string>
+    <string name="title_activity_signup">SignupActivity</string>
 
 </resources>
