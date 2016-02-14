@@ -26,8 +26,7 @@
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
         android:layout_below="@+id/nameLabel"
-        android:layout_alignParentLeft="true"
-        android:allowUndo="false" />
+        android:layout_alignParentLeft="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -48,7 +47,6 @@
         android:id="@+id/emailField"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:allowUndo="false"
         android:layout_below="@+id/emailLabel"
         android:layout_alignParentLeft="true" />
 
@@ -71,8 +69,20 @@
         android:id="@+id/passwordField"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:allowUndo="false"
         android:layout_below="@+id/passwordLabel"
         android:layout_alignParentLeft="true" />
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_up"
+        android:id="@+id/signupButton"
+        android:layout_marginTop="109dp"
+        android:background="#0a6f0c"
+        android:padding="12dp"
+        android:textColor="#ffffff"
+        android:textSize="20sp"
+        android:layout_below="@+id/passwordField"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

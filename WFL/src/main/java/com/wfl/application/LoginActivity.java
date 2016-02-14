@@ -13,18 +13,18 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
+import com.facebook.CallbackManager;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.Profile;
+import com.facebook.login.widget.LoginButton;
 import com.firebase.client.AuthData;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.parse.LogInCallback;
-import com.parse.ParseException;
-import com.parse.ParseFacebookUtils;
-import com.parse.ParseUser;
-import com.parse.SaveCallback;
+import com.firebase.client.ValueEventListener;
 import com.waffle.wfl.R;
 
 import org.json.JSONException;
@@ -36,18 +36,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class LoginActivity extends Activity implements View.OnClickListener {
 
     private Button loginButton;
     private Button signUpButton;
-    private Button fbLoginButton;
+    private LoginButton fbLoginButton;
     private EditText usernameField;
     private EditText passwordField;
 
     private Intent intent;
     private Intent serviceIntent;
+    private Intent signupIntent;
 
     private static String LOG_TAG = "LOGIN_ACTIVITY";
 
@@ -56,8 +56,13 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     private Profile mFbProfile;
 
     private Firebase myFirebaseRef;
+    /* The callback manager for Facebook */
+    private CallbackManager mFacebookCallbackManager;
+    /* Used to track user logging in/out off Facebook */
+    private AccessTokenTracker mFacebookAccessTokenTracker;
 
     ProfilePhotoAsync mProfilePhotoAsync;
+    private UserDAO userDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +71,9 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 //        intent = new Intent(getApplicationContext(), ListUsersActivity.class);
         intent = new Intent(getApplicationContext(), InviteFriendsActivity.class); //temp
         serviceIntent = new Intent(getApplicationContext(), MessageService.class);
+        signupIntent = new Intent(getApplicationContext(), SignupActivity.class);
         myFirebaseRef = MainDAO.getInstance().getFirebase();
+        userDAO = new UserDAO();
 
         //See if there is a user already logged in.
         if (myFirebaseRef.getAuth() != null) {
@@ -78,9 +85,22 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
         loginButton = (Button) findViewById(R.id.loginButton);
         signUpButton = (Button) findViewById(R.id.signupButton);
-        fbLoginButton = (Button) findViewById(R.id.fbLogin);
         usernameField = (EditText) findViewById(R.id.loginUsername);
         passwordField = (EditText) findViewById(R.id.loginPassword);
+
+        /* Fb Login shenanigans */
+        mFacebookCallbackManager = CallbackManager.Factory.create();
+        fbLoginButton = (LoginButton) findViewById(R.id.fbLoginButton);
+        List<String> mPermissions = Arrays.asList("public_profile", "user_friends", "email");
+        fbLoginButton.setReadPermissions(mPermissions);
+        mFacebookAccessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+                Log.i(LOG_TAG, "Facebook.AccessTokenTracker.OnCurrentAccessTokenChanged");
+                LoginActivity.this.onFacebookAccessTokenChange(currentAccessToken);
+            }
+        };
+
 
         mFbProfile = Profile.getCurrentProfile();
 
@@ -92,12 +112,16 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
+        mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onDestroy() {
         stopService(new Intent(this, MessageService.class));
+        // if user logged in with Facebook, stop tracking their token
+        if (mFacebookAccessTokenTracker != null) {
+            mFacebookAccessTokenTracker.stopTracking();
+        }
         super.onDestroy();
     }
 
@@ -109,9 +133,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         else if (view == signUpButton) {
             handleSignUp();
         }
-        else if (view == fbLoginButton) {
-            handleFbLogin();
-        }
     }
 
     private void handleLogin() {
@@ -122,33 +143,17 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     }
 
     private void handleSignUp() {
-        final String username = usernameField.getText().toString();
-        final String password = passwordField.getText().toString();
-
-        if (username.length() > 0 && password.length() > 0) {
-            myFirebaseRef.createUser(username, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
-                @Override
-                public void onSuccess(Map<String, Object> result) {
-                    Log.d(LOG_TAG, "Successfully created user account with uid: " + result.get("uid"));
-                    loginUser(username, password);
-                }
-                @Override
-                public void onError(FirebaseError firebaseError) {
-                    Toast.makeText(getApplicationContext(),
-                            firebaseError.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                }
-            });
-        }
+        startActivity(signupIntent);
     }
 
     private void loginUser(String username, String password) {
-        myFirebaseRef.authWithPassword(username, password,  new Firebase.AuthResultHandler() {
+        myFirebaseRef.authWithPassword(username, password, new Firebase.AuthResultHandler() {
             @Override
             public void onAuthenticated(AuthData authData) {
                 Log.d(LOG_TAG, "User ID: " + authData.getUid() + ", Provider: " + authData.getProvider());
                 loginDone();
             }
+
             @Override
             public void onAuthenticationError(FirebaseError firebaseError) {
                 Toast.makeText(getApplicationContext(),
@@ -158,25 +163,49 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         });
     }
 
-    private void handleFbLogin() {
-        List<String> mPermissions = Arrays.asList("public_profile", "user_friends", "email");
-        ParseFacebookUtils.logInWithReadPermissionsInBackground(LoginActivity.this, mPermissions, new LogInCallback() {
-            @Override
-            public void done(ParseUser user, ParseException err) {
-                if (user == null) {
-                    Log.d(LOG_TAG, "Uh oh. The user cancelled the Facebook login.");
-                } else if (user.isNew()) {
-                    Log.d(LOG_TAG, "User signed up and logged in through Facebook!");
-                    getUserDetailsFromFB();
-                } else {
-                    Log.d(LOG_TAG, "User logged in through Facebook!");
-                    getUserDetailsFromParse();
+    private void onFacebookAccessTokenChange(AccessToken token) {
+        if (token != null) {
+            myFirebaseRef.authWithOAuthToken("facebook", token.getToken(), new Firebase.AuthResultHandler() {
+                @Override
+                public void onAuthenticated(AuthData authData) {
+                    // The Facebook user is now authenticated with your Firebase app
+                    checkUserData(authData.getUid());
                 }
+                @Override
+                public void onAuthenticationError(FirebaseError firebaseError) {
+                    // there was an error
+                    Log.e(LOG_TAG, "Error getting authData with fbLogin, " + firebaseError.getMessage());
+                }
+            });
+        } else {
+            myFirebaseRef.unauth();
+        }
+    }
+
+    private void checkUserData(String uid) {
+        Firebase userRef = userDAO.getUserRef(uid);
+        final String mUid = uid;
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    //we already have this user's details
+                    loginDone();
+                }
+                else {
+                    //get user details from facebook and add user
+                    getUserDetailsFromFB(mUid);
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e(LOG_TAG, "checkUserdata error: " + firebaseError.getMessage());
             }
         });
     }
 
-    private void getUserDetailsFromFB() {
+    private void getUserDetailsFromFB(final String uid) {
         Bundle parameters = new Bundle();
         parameters.putString("fields", "email,name");
 
@@ -190,12 +219,11 @@ public class LoginActivity extends Activity implements View.OnClickListener {
            /* handle the result */
                         try {
                             Log.d(LOG_TAG, response.getJSONObject().toString());
-                            Log.d(LOG_TAG, AccessToken.getCurrentAccessToken().getToken());
                             fbEmail = response.getJSONObject().getString("email");
-//                            mEmailID.setText(email);
                             fbName = response.getJSONObject().getString("name");
-//                            mUsername.setText(name);
-                            saveNewUser();
+                            UserModel user = new UserModel(fbName, fbName.toLowerCase(), fbEmail);
+                            userDAO.addUser(uid, user);
+                            loginDone();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -204,62 +232,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         ).executeAsync();
 //        mProfilePhotoAsync = new ProfilePhotoAsync(mFbProfile);
 //        mProfilePhotoAsync.execute();
-    }
-
-    private void saveNewUser() {
-        final ParseUser parseUser = ParseUser.getCurrentUser();
-        parseUser.setUsername(fbName);
-        parseUser.setEmail(fbEmail);
-        /*
-//        Saving profile photo as a ParseFile
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//        Bitmap bitmap = ((BitmapDrawable) mProfileImage.getDrawable()).getBitmap(); //Todo: set mprofileImage somewhere
-        Bitmap bitmap = mProfilePhotoAsync.bitmap;
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-        byte[] data = stream.toByteArray();
-
-        String thumbName = parseUser.getUsername().replaceAll("\\s+", "");
-        final ParseFile parseFile = new ParseFile(thumbName + "_thumb.jpg", data);
-        parseFile.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                parseUser.put("profileThumb", parseFile);
-                //Finally save all the user details
-                parseUser.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        Toast.makeText(LoginActivity.this, "New user:" + fbName + " Signed up", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
-        */
-        parseUser.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                Toast.makeText(LoginActivity.this, "New user:" + fbName + " Signed up", Toast.LENGTH_SHORT).show();
-                loginDone();
-            }
-        });
-    }
-
-    private void getUserDetailsFromParse() {
-        ParseUser parseUser = ParseUser.getCurrentUser();
-        /* Don't need this right now
-        //Fetch profile photo
-        try {
-            ParseFile parseFile = parseUser.getParseFile("profileThumb");
-            byte[] data = parseFile.getData();
-            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-            mProfileImage.setImageBitmap(bitmap);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        */
-        fbEmail = parseUser.getEmail();
-        fbName = parseUser.getUsername();
-        Toast.makeText(LoginActivity.this, "Welcome back " + fbName, Toast.LENGTH_SHORT).show();
-        loginDone();
     }
 
     private void loginDone() {
