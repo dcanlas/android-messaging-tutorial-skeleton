@@ -1,15 +1,20 @@
 package com.wfl.application;
 
+import android.content.res.Resources;
+
 import com.firebase.client.Firebase;
+import com.waffle.wfl.R;
 
 public class MainDAO {
     private Firebase firebaseRef;
+    private Resources resources;
 
     private static MainDAO instance;
+    private static UserModel currentUser;
 
-    public static void initInstance() {
+    public static void initInstance(Resources res) {
         if (instance == null) {
-            instance = new MainDAO();
+            instance = new MainDAO(res);
         }
     }
 
@@ -17,8 +22,17 @@ public class MainDAO {
         return instance;
     }
 
-    private MainDAO() {
-        firebaseRef = new Firebase("https://dazzling-heat-6981.firebaseio.com/");
+    public static UserModel getCurrentUser() {
+        return currentUser;
+    }
+
+    public static void setCurrentUser(UserModel user) {
+        currentUser = user;
+    }
+
+    private MainDAO(Resources res) {
+        resources = res;
+        firebaseRef = new Firebase(resources.getString(R.string.firebase_url));
     }
 
     public Firebase getFirebase() {

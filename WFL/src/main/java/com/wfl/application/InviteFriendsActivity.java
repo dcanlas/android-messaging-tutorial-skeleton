@@ -2,32 +2,36 @@ package com.wfl.application;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import com.parse.FindCallback;
-import com.parse.ParseException;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
+import com.firebase.ui.FirebaseListAdapter;
 import com.waffle.wfl.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class InviteFriendsActivity extends Activity implements View.OnClickListener{
 
     ArrayList<String> names = new ArrayList<String>();
 
+    private String LOG_TAG = "INVITE_ACTIVITY";
+
+    private UserDAO userDAO;
+    FirebaseListAdapter<UserModel> namesAdapter;
     private Button findButton;
     private EditText friendSearch;
+    private ListView inviteableListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invite_friends);
+        userDAO = new UserDAO();
+        inviteableListView = (ListView) findViewById(R.id.inviteableListView);
 
         findButton = (Button) findViewById(R.id.findButton);
         friendSearch = (EditText) findViewById(R.id.friendSearch);
@@ -44,8 +48,26 @@ public class InviteFriendsActivity extends Activity implements View.OnClickListe
 
     public void findUsers() {
         //Clear the names array first
-        names.clear();
+//        if (namesAdapter != null) {
+//            namesAdapter.cleanup();
+//        }
+        inviteableListView.setAdapter(null);
         String name = friendSearch.getText().toString();
+        namesAdapter = new FirebaseListAdapter<UserModel>(this,
+                UserModel.class,
+                R.layout.inviteable_user_list_item,
+                userDAO.getRef().orderByChild("displayName").startAt(name.toLowerCase())) {
+            @Override
+            protected void populateView(View view, UserModel userModel, int i) {
+                //FIXME: I need to check for ID here really. as there can be duplicate emails when testing?
+                Log.i(LOG_TAG, "the user " + i + " is " + userModel.getName());
+                if (!MainDAO.getCurrentUser().getEmail().equals(userModel.getEmail())) {
+                    ((TextView) view.findViewById(R.id.inviteableUserName)).setText(userModel.getName());
+                }
+            }
+        };
+        inviteableListView.setAdapter(namesAdapter);
+        /*
         ParseQuery<ParseUser> query = ParseUser.getQuery();
         query.whereStartsWith("username", name);
         query.findInBackground(new FindCallback<ParseUser>() {
@@ -66,5 +88,12 @@ public class InviteFriendsActivity extends Activity implements View.OnClickListe
                 }
             }
         });
+        */
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        namesAdapter.cleanup();
     }
 }

@@ -2,6 +2,7 @@ package com.wfl.application;
 
 
 import android.app.Application;
+import android.content.res.Resources;
 
 import com.facebook.FacebookSdk;
 import com.firebase.client.Firebase;
@@ -15,12 +16,12 @@ public class App extends Application {
         Parse.initialize(this, getString(R.string.parse_app_id), getString(R.string.parse_client_key));
         Firebase.setAndroidContext(this);
         FacebookSdk.sdkInitialize(this);
-        initSingletons();
+        initSingletons(getResources());
         super.onCreate();
     }
 
-    public void initSingletons() {
-        MainDAO.initInstance();
+    public void initSingletons(Resources resources) {
+        MainDAO.initInstance(resources);
     }
 
 }

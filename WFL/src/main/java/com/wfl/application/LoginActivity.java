@@ -77,8 +77,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
         //See if there is a user already logged in.
         if (myFirebaseRef.getAuth() != null) {
-            startActivity(intent);
-            startService(serviceIntent);
+            loginDone();
         }
 
         setContentView(R.layout.activity_login);
@@ -235,6 +234,24 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     }
 
     private void loginDone() {
+        //set the current user details as a UserModel
+        AuthData authData = myFirebaseRef.getAuth();
+        Firebase userRef = userDAO.getUserRef(authData.getUid());
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Log.i(LOG_TAG, "foobar " + dataSnapshot.getValue(UserModel.class).getName());
+                    MainDAO.setCurrentUser(dataSnapshot.getValue(UserModel.class));
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e(LOG_TAG, "Error trying to get current user data" + firebaseError.getMessage());
+            }
+        });
+
         startActivity(intent);
         startService(serviceIntent);
     }

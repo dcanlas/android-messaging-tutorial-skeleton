@@ -12,6 +12,10 @@ public class UserDAO {
 
     public UserDAO() {}
 
+    public Firebase getRef() {
+        return myRef;
+    }
+
     public void addUser(String uid, UserModel user) {
         myRef.child(uid).setValue(user, new Firebase.CompletionListener() {
             @Override
