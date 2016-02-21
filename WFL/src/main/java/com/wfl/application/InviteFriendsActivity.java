@@ -7,8 +7,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.firebase.ui.FirebaseListAdapter;
 import com.waffle.wfl.R;
 
@@ -47,48 +50,34 @@ public class InviteFriendsActivity extends Activity implements View.OnClickListe
     }
 
     public void findUsers() {
-        //Clear the names array first
-//        if (namesAdapter != null) {
-//            namesAdapter.cleanup();
-//        }
-        inviteableListView.setAdapter(null);
+        names.clear();
         String name = friendSearch.getText().toString();
-        namesAdapter = new FirebaseListAdapter<UserModel>(this,
-                UserModel.class,
-                R.layout.inviteable_user_list_item,
-                userDAO.getRef().orderByChild("displayName").startAt(name.toLowerCase())) {
-            @Override
-            protected void populateView(View view, UserModel userModel, int i) {
-                //FIXME: I need to check for ID here really. as there can be duplicate emails when testing?
-                Log.i(LOG_TAG, "the user " + i + " is " + userModel.getName());
-                if (!MainDAO.getCurrentUser().getEmail().equals(userModel.getEmail())) {
-                    ((TextView) view.findViewById(R.id.inviteableUserName)).setText(userModel.getName());
-                }
-            }
-        };
-        inviteableListView.setAdapter(namesAdapter);
-        /*
-        ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.whereStartsWith("username", name);
-        query.findInBackground(new FindCallback<ParseUser>() {
-            @Override
-            public void done(List<ParseUser> userList, ParseException e) {
-                if (e == null) {
-                    for (int i = 0; i < userList.size(); i++) {
-                        names.add(userList.get(i).getUsername().toString());
+        userDAO.getRef().orderByChild("displayName").startAt(name.toLowerCase()).endAt(name.toLowerCase()+"\uf8ff")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot userSnapShot : dataSnapshot.getChildren()) {
+                            UserModel user = userSnapShot.getValue(UserModel.class);
+                            Log.i(LOG_TAG, "the user is " + user.getName());
+                            if (!MainDAO.getCurrentUser().getEmail().equals(user.getEmail())) {
+                                names.add(user.getName());
+                            }
+                        }
+                        if (names.isEmpty()) {
+                            Toast.makeText(getApplicationContext(),
+                                    "No users found.", Toast.LENGTH_LONG).show();
+                        }
+                        FriendListAdapter namesAdapter = new FriendListAdapter(names, getApplicationContext());
+                        inviteableListView.setAdapter(namesAdapter);
                     }
-                    ListView inviteableListView = (ListView) findViewById(R.id.inviteableListView);
-                    FriendListAdapter namesAdapter = new FriendListAdapter(names, getApplicationContext());
-                    inviteableListView.setAdapter(namesAdapter);
-                }
-                else {
-                    Toast.makeText(getApplicationContext(),
-                            "Cannot find matching user",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-        */
+
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+                        Toast.makeText(getApplicationContext(),
+                                "Trying to find user error " + firebaseError.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     @Override
